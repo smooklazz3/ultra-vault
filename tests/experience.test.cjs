@@ -15,11 +15,11 @@ async function fixture(){
  return {h:context.hooks,el,tasks,notes,store,listeners,setReduced:v=>{reduced=v},contexts:()=>contexts};
 }
 test('new landscape editions preserve every existing card and balanced tier pools',async()=>{
- const {h}=await fixture();assert.equal(h.cards.length,192);
- const horizontal=h.cards.filter(c=>c.layout==='landscape');assert.equal(horizontal.length,12);
- assert.equal(new Set(h.cards.map(c=>c.id)).size,192);
- for(const tier of ['R','SR','UR'])assert.equal(horizontal.filter(c=>c.rarity===tier).length,4);
- for(const c of horizontal){assert(c.id>=144);assert(fs.existsSync(path.join(root,c.image)));assert(h.cardFace(c).includes('landscape-face'));}
+ const {h}=await fixture();assert.equal(h.cards.length,193);
+ const horizontal=h.cards.filter(c=>c.layout==='landscape');assert.equal(horizontal.length,13);
+ assert.equal(new Set(h.cards.map(c=>c.id)).size,193);
+ for(const tier of ['R','SR','UR'])assert.equal(horizontal.filter(c=>c.rarity===tier).length,tier==='UR'?5:4);
+ for(const c of horizontal){assert(c.id>=144);assert(fs.existsSync(path.join(root,c.image)));assert(h.cardFace(c).includes(c.artwork==='complete'?'complete-card-art':'landscape-face'));}
  for(let i=0;i<1000;i++)assert(h.pickCard().id>=120);
  h.setDrawFormat('landscape');for(let i=0;i<1000;i++)assert.equal(h.pickCard().layout,'landscape');
  h.setUniverse('ultra');for(let i=0;i<1000;i++)assert(h.pickCard().id<120);
@@ -63,15 +63,17 @@ test('ordinary button clicks do not treat the themed body as a category switch',
  for(let i=0;i<100;i++)assert.equal(h.pickCard().layout,'landscape');
 });
 
-test('new star batch has 36 distinct credited players and can be filtered and searched',async()=>{
+test('credited player batch is retained and the newest Future Star card appears in filters',async()=>{
  const {h,el,listeners}=await fixture();
  const added=h.cards.filter(c=>c.addedOn==='2026-11-16');assert.equal(added.length,36);
  assert.equal(new Set(added.map(c=>c.name)).size,36);
- const football=h.cards.filter(c=>c.category==='football');assert.equal(football.length,72);
- assert.equal(new Set(football.map(c=>c.sourcePage)).size,60);
- for(const tier of ['R','SR','UR'])assert.equal(football.filter(c=>c.rarity===tier).length,24);
+ const football=h.cards.filter(c=>c.category==='football');assert.equal(football.length,73);
+ assert.equal(new Set(football.map(c=>c.sourcePage||c.name)).size,61);
+ for(const tier of ['R','SR','UR'])assert.equal(football.filter(c=>c.rarity===tier).length,tier==='UR'?25:24);
  for(const c of added){assert(c.author&&c.license);assert(c.sourcePage.startsWith('https://commons.wikimedia.org/'));assert(fs.existsSync(path.join(root,c.image)));}
  listeners.get('click')({target:{closest(selector){return selector==='[data-format-filter]'?{dataset:{formatFilter:'new'}}:null}}});
- assert.equal((el('#atlas-grid').innerHTML.match(/data-card="/g)||[]).length,36);
+ assert.equal((el('#atlas-grid').innerHTML.match(/data-card="/g)||[]).length,1);
+ assert(el('#atlas-grid').innerHTML.includes('未来之星'));
+ listeners.get('click')({target:{closest(selector){return selector==='[data-format-filter]'?{dataset:{formatFilter:'all'}}:null}}});
  el('#search').value='贝克汉姆';h.renderAtlas();assert.equal((el('#atlas-grid').innerHTML.match(/data-card="/g)||[]).length,1);
 });

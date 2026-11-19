@@ -202,5 +202,18 @@
     "edition": "冰川之星",
     "editionNo": 12,
     "baseCardId": 139
+  },
+  {
+    "id": 192,
+    "category": "football",
+    "layout": "landscape",
+    "name": "Future Star No. 14",
+    "cn": "未来之星",
+    "rarity": "UR",
+    "edition": "14 号特别版",
+    "editionNo": 13,
+    "image": "assets/future-star/card.png",
+    "artwork": "complete",
+    "addedOn": "2026-11-19"
   }
 ]

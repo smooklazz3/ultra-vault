@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1715">
+  <title>14 号射门挑战 · 光之秘藏</title>
+  <link rel="stylesheet" href="shootout.css?v=1">
+  <script src="shootout.js?v=1" defer></script>
+</head>
+<body>
+  <main class="game">
+    <header>
+      <a href="./">← 返回抽卡册</a>
+      <div class="brand">ULTRA VAULT</div>
+      <div>最佳 <strong id="record">0</strong></div>
+    </header>
+    <section class="arena" aria-label="第一人称足球射门">
+      <canvas id="pitch" aria-label="球场、球门与移动中的守门员"></canvas>
+      <div id="hud" class="hud" hidden>
+        <div>得分 <strong id="score">0</strong></div>
+        <div>射门 <strong id="attempts">0 / 8</strong></div>
+      </div>
+      <div id="overlay" class="overlay">
+        <div class="intro">
+          <section>
+            <p class="eyebrow">NO. 14 · FUTURE STAR</p>
+            <h1>14 号<br>射门挑战</h1>
+            <p id="intro-text">化身未来之星，用 8 次射门挑战移动守门员。进球得 1 分，命中球门内的金色靶标得 2 分。</p>
+            <button id="start" class="primary" type="button">开始挑战</button>
+          </section>
+          <img src="assets/future-star/player.png" alt="身穿红色 14 号球衣的未来之星">
+        </div>
+      </div>
+    </section>
+    <div id="controls" class="controls" hidden>
+      <div class="player"><span>14</span><div><strong>未来之星</strong><div id="status" role="status" aria-live="polite">瞄准球门，准备射门。</div></div></div>
+      <div class="shoot-control">
+        <div class="power" aria-label="射门力度"><i id="power-fill"></i></div>
+        <button id="kick" class="primary" type="button">射门</button>
+      </div>
+    </div>
+    <p id="help" class="help" hidden>点击或拖动球场瞄准，也可用方向键。按住「射门」或空格蓄力，松开出脚。</p>
+  </main>
+</body>
+</html>
