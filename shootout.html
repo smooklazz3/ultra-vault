@@ -4,43 +4,54 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1715">
-  <title>14 号射门挑战 · 光之秘藏</title>
-  <link rel="stylesheet" href="shootout.css?v=1">
-  <script src="shootout.js?v=1" defer></script>
+  <title>14 号 · 禁区突破 | 光之秘藏</title>
+  <link rel="stylesheet" href="shootout.css?v=breakthrough">
+  <script src="shootout.js?v=breakthrough" defer></script>
 </head>
 <body>
   <main class="game">
     <header>
-      <a href="./">← 返回抽卡册</a>
-      <div class="brand">ULTRA VAULT</div>
-      <div>最佳 <strong id="record">0</strong></div>
+      <a href="./">返回抽卡册</a>
+      <button id="mouse-lock" type="button" hidden>锁定鼠标视角</button>
+      <div>最佳 <strong id="record">0</strong> 球</div>
     </header>
-    <section class="arena" aria-label="第一人称足球射门">
-      <canvas id="pitch" aria-label="球场、球门与移动中的守门员"></canvas>
+    <section class="arena" aria-label="第一人称足球突破">
+      <canvas id="pitch" aria-label="第一人称足球场"></canvas>
       <div id="hud" class="hud" hidden>
-        <div>得分 <strong id="score">0</strong></div>
-        <div>射门 <strong id="attempts">0 / 8</strong></div>
+        <div class="counter">进球 <strong id="score">0</strong></div>
+        <div class="counter">进攻 <strong id="attempts">1 / 5</strong></div>
+        <div class="counter clock">剩余 <strong id="clock">20</strong></div>
       </div>
+      <div id="crosshair" hidden aria-hidden="true"></div>
+      <div id="outcome" class="outcome" hidden></div>
       <div id="overlay" class="overlay">
         <div class="intro">
           <section>
-            <p class="eyebrow">NO. 14 · FUTURE STAR</p>
-            <h1>14 号<br>射门挑战</h1>
-            <p id="intro-text">化身未来之星，用 8 次射门挑战移动守门员。进球得 1 分，命中球门内的金色靶标得 2 分。</p>
-            <button id="start" class="primary" type="button">开始挑战</button>
+            <p class="eyebrow">FUTURE STAR / NO. 14</p>
+            <h1>禁区突破</h1>
+            <p id="intro-text">用五次进攻挑战防线。引开上抢的后卫，变向跑出空当，再瞄准球门蓄力射门。</p>
+            <button id="start" class="primary" type="button">上场</button>
           </section>
           <img src="assets/future-star/player.png" alt="身穿红色 14 号球衣的未来之星">
         </div>
       </div>
+      <div id="touch" hidden>
+        <div id="joystick" aria-label="触屏移动"><i></i></div>
+        <div class="touch-actions">
+          <button type="button" id="feint">变向</button>
+          <button type="button" id="sprint">冲刺</button>
+          <button type="button" id="kick" class="primary">射门</button>
+        </div>
+      </div>
     </section>
     <div id="controls" class="controls" hidden>
-      <div class="player"><span>14</span><div><strong>未来之星</strong><div id="status" role="status" aria-live="polite">瞄准球门，准备射门。</div></div></div>
-      <div class="shoot-control">
-        <div class="power" aria-label="射门力度"><i id="power-fill"></i></div>
-        <button id="kick" class="primary" type="button">射门</button>
+      <div class="player"><span>14</span><div><strong>未来之星</strong><div id="status" role="status">观察后卫，找空当。</div></div></div>
+      <div class="meters">
+        <div class="meter"><span>体力</span><div><i id="stamina"></i></div></div>
+        <div class="meter power"><span>力度</span><div><i id="power"></i></div></div>
       </div>
     </div>
-    <p id="help" class="help" hidden>点击或拖动球场瞄准，也可用方向键。按住「射门」或空格蓄力，松开出脚。</p>
+    <p id="help" class="help" hidden><span class="desktop-help"><kbd>WASD</kbd> 带球 · 拖动或 <kbd>方向键</kbd> 转视角 · <kbd>Shift</kbd> 冲刺 · <kbd>Q</kbd> 侧向变向 · 按住 <kbd>空格</kbd> 蓄力，松开射门</span><span class="touch-help">左侧摇杆带球，拖动场地转视角。按住射门蓄力，松开出脚。</span></p>
   </main>
 </body>
 </html>
