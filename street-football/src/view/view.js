@@ -59,7 +59,7 @@ export function createView(container, { mobile = false } = {}) {
     look: (dx, dy) => shoulder.look(dx, dy),
     point: (x, y) => {
       const bounds = container.getBoundingClientRect();
-      shoulder.point(x - bounds.left, y - bounds.top);
+      shoulder.point((x - bounds.left) * size.width / bounds.width, (y - bounds.top) * size.height / bounds.height);
     },
     aim: move => shoulder.aim(move),
     /** İzometrik nişan oku bu karede nereyi göstersin (null: gizli). */

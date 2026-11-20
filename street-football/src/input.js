@@ -1,4 +1,4 @@
-import { createTouch } from './touch.js';
+import { createTouch } from './touch.js?v=touch-recovery';
 
 /**
  * Klavye ve fare (yalnızca tarayıcı). WASD / oklar hareket, fare kilitliyken bakış; sol tık şut (basılı tutunca rüzgar
@@ -10,7 +10,7 @@ import { createTouch } from './touch.js';
  * Dokunmatik kipte (`touch` kök öğesi verilince, bkz. touch.js) fare kilidi yoktur: joystick hareket, sağ yarı bakış,
  * düğmeler fare ve klavyeyle aynı basışları üretir.
  */
-export function createInput(canvas, { playing, onHelp, onPause, onLook, onPoint, onUnlock, onBlur, onCamera, canLock, testMode, touch }) {
+export function createInput(canvas, { playing, onHelp, onPause, onLook, onPoint, onUnlock, onBlur, onCamera, onTouchCancel, canLock, testMode, touch }) {
   const keys = new Set();
   let edges = {}, held = false, rightHeld = false;
   /** Dokunmatik düğmeler: shoot sol tık, pass sağ tık, jump Boşluk, sprint Shift. */
@@ -24,6 +24,12 @@ export function createInput(canvas, { playing, onHelp, onPause, onLook, onPoint,
     up(name) {
       if (name === 'shoot' && held) { held = false; edges.release = true; }
       if (name === 'pass' && rightHeld) { rightHeld = false; edges.secondaryUp = true; }
+    },
+    cancel(name) {
+      if (name === 'shoot') { held = false; delete edges.tap; delete edges.release; }
+      else if (name === 'pass') { rightHeld = false; delete edges.secondary; delete edges.secondaryUp; }
+      else delete edges[name];
+      onTouchCancel(name);
     },
     look: (dx, dy) => { if (playing()) onLook(dx, dy); },
   }) : null;

@@ -1,10 +1,10 @@
 import { createAudio } from './audio.js';
 import { createCinema } from './cinema.js';
 import { CINEMA, KICK } from './config.js';
-import { createInput } from './input.js';
-import { fullscreenOn, fullscreenSupported, toggleFullscreen, touchDevice } from './touch.js?v=screen-fit';
+import { createInput } from './input.js?v=touch-recovery';
+import { fullscreenOn, fullscreenSupported, toggleFullscreen, touchDevice } from './touch.js?v=touch-recovery';
 import { createUI, onTap } from './ui.js?v=screen-fit';
-import { createView } from './view/view.js?v=screen-fit';
+import { createView } from './view/view.js?v=touch-recovery';
 import { canPower, createWorld, startAim, step } from './world.js';
 import { t } from './dil.js';
 
@@ -16,7 +16,6 @@ export function start(root) {
   const touch = touchDevice();
   const portrait = matchMedia('(orientation: portrait)');
   root.classList.toggle('touch', touch);
-  fitVisibleViewport(root);
   const view = createView(root.querySelector('#yg-view'), { mobile: touch });
   const ui = createUI(root);
   const audio = createAudio();
@@ -44,7 +43,10 @@ export function start(root) {
     canLock: () => view.cameraMode === 'shoulder',
     onUnlock: () => { if (activePointerLock && active() && view.cameraMode === 'shoulder') show('pause'); },
     onBlur: () => { if (active()) show('pause'); else input.clear(); },
+    onTouchCancel: cancelTouchAction,
   });
+  fitVisibleViewport(root, input.clear);
+  if (touch) preventMatchGestures(root);
   document.addEventListener('pointerlockchange', () => { activePointerLock = document.pointerLockElement === view.canvas; });
 
   function setCamera(mode) {
@@ -147,6 +149,17 @@ export function start(root) {
     return left <= 0 ? t(kind === 'fire' ? 'mac.yakarBitti' : 'mac.ruzgarBitti') : null;
   };
   const myAim = () => (w.aim && w.aim.id === w.me ? w.aim : null);
+  function cancelTouchAction(action) {
+    if (action !== 'pass' && action !== 'shoot') return;
+    const p = mine();
+    if (action === 'pass') { rightHold = null; p.fireCharge = 0; }
+    else { p.charge = 0; p.chargeSpent = false; }
+    if (myAim()?.kind === (action === 'pass' ? 'fire' : 'wind')) {
+      w.aim = null;
+      cinema.reset();
+      endCinema();
+    }
+  }
   function route(cmd) {
     const aim = myAim();
     if (aim && aim.kind === 'fire') {
@@ -286,16 +299,32 @@ export function start(root) {
   requestAnimationFrame(frame);
 }
 
-function fitVisibleViewport(root) {
+function preventMatchGestures(root) {
+  const block = e => {
+    if (root.dataset.screen === 'match' && e.cancelable) e.preventDefault();
+  };
+  for (const name of ['gesturestart', 'gesturechange', 'dblclick', 'contextmenu']) {
+    root.addEventListener(name, block, { passive: false });
+  }
+  const blockPinch = e => { if (e.touches.length > 1) block(e); };
+  root.addEventListener('touchstart', blockPinch, { passive: false });
+  root.addEventListener('touchmove', blockPinch, { passive: false });
+}
+
+function fitVisibleViewport(root, onScaleChange) {
   const viewport = window.visualViewport;
   if (!viewport) return;
+  let previousScale = viewport.scale;
   const sync = () => {
-    // Keep browser zoom available in menus without resizing the game in response to a pinch.
-    if (Math.abs(viewport.scale - 1) > 0.01 || !viewport.width || !viewport.height) return;
-    root.style.setProperty('--view-width', `${viewport.width}px`);
-    root.style.setProperty('--view-height', `${viewport.height}px`);
+    const { width, height, scale } = viewport;
+    if (!width || !height || !scale) return;
+    if (scale !== previousScale) { previousScale = scale; onScaleChange(); }
+    // Keep the full play area and both control clusters visible even if the browser has already zoomed.
+    root.style.setProperty('--view-width', `${width * scale}px`);
+    root.style.setProperty('--view-height', `${height * scale}px`);
     root.style.setProperty('--view-left', `${viewport.offsetLeft}px`);
     root.style.setProperty('--view-top', `${viewport.offsetTop}px`);
+    root.style.setProperty('--view-transform', scale === 1 ? 'none' : `scale(${1 / scale})`);
   };
   viewport.addEventListener('resize', sync);
   viewport.addEventListener('scroll', sync);

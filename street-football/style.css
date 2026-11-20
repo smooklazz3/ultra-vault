@@ -41,10 +41,13 @@ button:disabled { cursor: wait; opacity: .65; }
 #yakar-gol {
   position: fixed; left: var(--view-left, 0px); top: var(--view-top, 0px);
   width: var(--view-width, 100%); height: var(--view-height, 100%); height: var(--view-height, 100dvh);
+  transform: var(--view-transform, none); transform-origin: top left;
   overflow: hidden; user-select: none; -webkit-user-select: none;
 }
 #yg-view { position: absolute; inset: 0; overflow: hidden; }
-.touch[data-screen="match"] #yg-view { touch-action: none; }
+.touch[data-screen="match"], .touch[data-screen="match"] #yg-view, .touch[data-screen="match"] .tool {
+  touch-action: none; -webkit-touch-callout: none;
+}
 #yg-view > canvas { display: block; width: 100%; height: 100%; }
 .toolbar {
   position: absolute; z-index: 12; top: calc(var(--edge-y) + env(safe-area-inset-top));
@@ -125,7 +128,7 @@ button:disabled { cursor: wait; opacity: .65; }
 .joystick-idle { position: absolute; z-index: 8; left: calc(38px + env(safe-area-inset-left)); bottom: calc(81px + env(safe-area-inset-bottom)); opacity: .6; }
 .joystick-idle::before { content: ""; position: absolute; inset: 33%; border: 1px solid #fff9; border-radius: 50%; }
 #yg-touch:has(#yg-stick:not([hidden])) .joystick-idle { opacity: .12; }
-#yg-stick { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 10; pointer-events: none; }
+#yg-stick { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 10; pointer-events: none; }
 #yg-stick::before { content: ""; position: absolute; left: -49px; top: -49px; }
 #yg-stick i { position: absolute; left: -19px; top: -19px; width: 38px; height: 38px; border-radius: 50%; background: #ffe4a4; box-shadow: 0 2px 8px #0006; }
 .touch-buttons {
@@ -222,7 +225,7 @@ tr.me { background: #f7496228; font-weight: 800; }
 .cine-aim i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff5a1f,#ffd35c)}
 #yg-cine:not([hidden]) ~ #yg-message{display:none!important}
 @keyframes ygBar{0%{transform:scaleY(0)}100%{transform:scaleY(1)}}
-@keyframes ygCine{0%{transform:translateX(-50%) scale(2.2);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:1}}
+@keyframes ygCine{from{opacity:0}to{opacity:1}}
 
 /* Nişangah dolum halkası: sol tık rüzgar (camgöbeği), sağ tık yakar top (turuncu), yapılamıyorsa gri; dolunca atar. */
 #yg-charge{--p:0;--c:#8ff3ff;position:absolute;left:50%;top:50%;width:92px;height:92px;transform:translate(-50%,-50%);z-index:6;pointer-events:none}
@@ -254,7 +257,7 @@ tr.me { background: #f7496228; font-weight: 800; }
 #yakar-gol.touch #yg-charge span{top:50%;left:100%;transform:translateY(-50%);margin:0 0 0 10px}
 #yakar-gol.touch #yg-charge span{font-size:10px;padding:4px 8px}
 
-#yg-message { font-family: inherit; text-align: center; max-width: calc(100vw - 38px); }
+#yg-message { pointer-events: none; font-family: inherit; text-align: center; max-width: calc(100vw - 38px); }
 .touch #yg-charge { bottom: calc(46px + env(safe-area-inset-bottom)); }
 .touch #yg-overhead { bottom: calc(13px + env(safe-area-inset-bottom)); }
 .cine-title strong { font-size: clamp(26px,7vh,58px); }

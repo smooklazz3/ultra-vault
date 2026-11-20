@@ -23,16 +23,26 @@ export function createTouch(root, sink) {
     axis = { x: x * k, z: z * k };
   };
 
+  function padPoint(e) {
+    const rect = el.pad.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * el.pad.clientWidth / rect.width,
+      y: (e.clientY - rect.top) * el.pad.clientHeight / rect.height,
+    };
+  }
+
   function down(e) {
     const target = e.target.closest('[data-t]');
     if (!target) return;
     e.preventDefault();
-    target.setPointerCapture?.(e.pointerId);
-    const kind = target.dataset.t, f = { kind, x: e.clientX, y: e.clientY, target };
+    const kind = target.dataset.t;
+    if ([...fingers.values()].some(f => f.kind === kind)) return;
+    const { x, y } = padPoint(e);
+    const f = { kind, x, y, target };
+    try { target.setPointerCapture?.(e.pointerId); } catch { /* The platform already cancelled the pointer. */ }
     if (kind === 'stick') {
-      if ([...fingers.values()].some(o => o.kind === 'stick')) return;
       el.stick.hidden = false;
-      el.stick.style.transform = `translate(${e.clientX}px,${e.clientY}px)`;
+      el.stick.style.transform = `translate(${x}px,${y}px)`;
       el.knob.style.transform = '';
       setStick(0, 0);
     } else if (kind !== 'look') {
@@ -46,35 +56,37 @@ export function createTouch(root, sink) {
     const f = fingers.get(e.pointerId);
     if (!f) return;
     e.preventDefault();
+    const { x, y } = padPoint(e);
     if (f.kind === 'stick') {
-      let dx = e.clientX - f.x, dy = e.clientY - f.y;
+      let dx = x - f.x, dy = y - f.y;
       const d = Math.hypot(dx, dy);
       if (d > TOUCH.stick) { dx *= TOUCH.stick / d; dy *= TOUCH.stick / d; }
       el.knob.style.transform = `translate(${dx}px,${dy}px)`;
       setStick(dx / TOUCH.stick, dy / TOUCH.stick);
       return;
     }
-    sink.look((e.clientX - f.x) * TOUCH.look, (e.clientY - f.y) * TOUCH.look);
-    f.x = e.clientX; f.y = e.clientY;
+    sink.look((x - f.x) * TOUCH.look, (y - f.y) * TOUCH.look);
+    f.x = x; f.y = y;
   }
 
-  function up(e) {
-    const f = fingers.get(e.pointerId);
+  function finish(id, cancelled) {
+    const f = fingers.get(id);
     if (!f) return;
-    fingers.delete(e.pointerId);
-    release(f);
-  }
-
-  function release(f) {
+    fingers.delete(id);
     if (f.kind === 'stick') { el.stick.hidden = true; setStick(0, 0); }
-    else if (f.kind !== 'look') { f.target.classList.remove('on'); sink.up(f.kind); }
+    else if (f.kind !== 'look') {
+      f.target.classList.remove('on');
+      if (cancelled) sink.cancel(f.kind);
+      else sink.up(f.kind);
+    }
+    if (f.target.hasPointerCapture?.(id)) f.target.releasePointerCapture(id);
   }
 
   el.pad.addEventListener('pointerdown', down);
-  el.pad.addEventListener('pointermove', move);
-  el.pad.addEventListener('pointerup', up);
-  el.pad.addEventListener('pointercancel', up);
-  el.pad.addEventListener('contextmenu', e => e.preventDefault());
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', e => finish(e.pointerId, false));
+  window.addEventListener('pointercancel', e => finish(e.pointerId, true));
+  el.pad.addEventListener('lostpointercapture', e => finish(e.pointerId, true));
 
   return {
     /** Joystick yönü (x sağ, z geri; 0-1 analog); tüketmez. */
@@ -83,8 +95,7 @@ export function createTouch(root, sink) {
     poll() { return { ...axis, sprint: false }; },
     /** Bütün parmakları bırakır (mola, ekran değişimi). */
     clear() {
-      for (const f of fingers.values()) release(f);
-      fingers.clear();
+      for (const id of fingers.keys()) finish(id, true);
     },
     /** Düğme yazıları ve enerji dolumu: topsuzken PAS düğmesi KAY, ŞUT düğmesi PAS İSTE olur. */
     sync(w, visible) {
