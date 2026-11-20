@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111b24">
+  <meta name="description" content="操控红衣 14 号，在 3D 街头球场和 AI 踢五人制足球。">
+  <title>14 号 · 街头足球 | 光之秘藏</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
+  <script type="module" src="./game.js"></script>
+</head>
+<body>
+  <main id="yakar-gol" data-screen="loading">
+    <div id="yg-view">
+      <div id="yg-labels" aria-hidden="true"></div>
+      <header class="toolbar">
+        <a class="tool back" href="../">← 抽卡册</a>
+        <div class="toolbar-actions">
+          <button class="tool" id="yg-sound" type="button" aria-label="切换音效">音效开</button>
+          <button class="tool" id="yg-help-open" type="button">操作</button>
+          <button class="tool" id="yg-cam" type="button" aria-label="切换镜头">俯视视角</button>
+          <button class="tool" id="yg-full" type="button" hidden>全屏</button>
+          <button class="tool" id="yg-pause-open" type="button" hidden>暂停</button>
+        </div>
+      </header>
+
+      <section id="yg-home" class="home" aria-labelledby="game-title">
+        <div class="home-content">
+          <p class="match-format">未来之星 <b>·</b> 单人 5v5</p>
+          <h1 id="game-title"><span>14 号</span>街头足球</h1>
+          <p class="home-description">和 AI 队友踢一场五人制。跑出空当要球，借墙回传，找准时机出脚。</p>
+          <button id="yg-start" class="primary" type="button" disabled>加载球场…</button>
+          <p class="home-meta">每场 5 分钟 · 平局进入金球决胜</p>
+        </div>
+        <div class="hero" aria-hidden="true">
+          <b>14</b>
+          <img src="../assets/future-star/player.png" width="1086" height="1448" alt="" fetchpriority="high">
+        </div>
+      </section>
+
+      <div id="yg-scoreboard" class="scoreboard" hidden>
+        <div class="team red-team"><span>红队</span><b id="yg-blue-score">0</b><div class="pips"><span class="fires" id="yg-blue-fire"></span><span class="winds" id="yg-blue-wind"></span></div></div>
+        <div class="clock"><b id="yg-timer">05:00</b><small id="yg-period">5v5</small></div>
+        <div class="team blue-team"><span>蓝队</span><b id="yg-orange-score">0</b><div class="pips"><span class="fires" id="yg-orange-fire"></span><span class="winds" id="yg-orange-wind"></span></div></div>
+      </div>
+      <div id="yg-speed" hidden></div>
+      <div id="yg-crosshair" aria-hidden="true" hidden>+</div>
+      <div id="yg-charge" hidden><div class="charge-ring"></div><span id="yg-charge-text"></span></div>
+      <div id="yg-overhead" hidden>
+        <div id="yg-over-stun" class="over-row stun" hidden><span id="yg-over-stun-text"></span><div class="over-bar"><i id="yg-over-stun-fill"></i></div></div>
+        <div id="yg-over-energy" class="over-row energy" hidden><span id="yg-over-energy-text"></span><div class="over-bar"><i id="yg-over-energy-fill"></i></div></div>
+      </div>
+      <div id="yg-cine" hidden><i class="cine-bar top"></i><i class="cine-bar bottom"></i><div class="cine-title"><strong id="yg-cine-title"></strong><span id="yg-cine-who"></span><div id="yg-cine-aim" class="cine-aim" hidden><i id="yg-cine-aim-fill"></i></div></div></div>
+      <div id="yg-ballmark" hidden aria-hidden="true"><i></i></div>
+      <div id="yg-message" role="status" hidden></div>
+      <div id="yg-burn" hidden><strong>暂离球场</strong><span id="yg-burn-count"></span><small>稍后自动回场</small></div>
+
+      <aside id="yg-player" class="player" aria-label="14 号状态" hidden>
+        <div class="player-photo"><img src="../assets/future-star/player.png" alt="" width="1086" height="1448"></div>
+        <div><div id="yg-side" class="player-name">14 号 · 红队</div><strong id="yg-ball-status">争抢球权</strong>
+          <div class="energy" aria-label="体力"><span id="yg-energy-text">就绪</span><div class="meter"><i id="yg-energy-fill"></i></div></div>
+        </div>
+      </aside>
+
+      <div id="yg-touch" hidden>
+        <div class="touch-zone left" data-t="stick" aria-label="拖动左侧移动"></div>
+        <div class="touch-zone right" data-t="look" aria-label="拖动右侧瞄准"></div>
+        <div class="joystick-idle" aria-hidden="true"></div>
+        <div id="yg-stick" aria-hidden="true" hidden><i></i></div>
+        <div class="touch-buttons" aria-label="触屏操作">
+          <button id="yg-t-sprint" class="tbtn sprint" type="button" data-t="sprint">冲刺</button>
+          <button id="yg-t-jump" class="tbtn jump" type="button" data-t="jump">跳跃</button>
+          <button id="yg-t-pass" class="tbtn pass" type="button" data-t="pass"><b class="when-ball">传球</b><small class="when-ball">长按火焰传球</small><b class="when-free">铲抢</b></button>
+          <button id="yg-t-shoot" class="tbtn shoot" type="button" data-t="shoot"><b class="when-ball">射门</b><small class="when-ball">长按旋风射门</small><b class="when-free">要球</b></button>
+        </div>
+      </div>
+      <div id="yg-rotate"><strong>请横过手机</strong><span>横屏后即可使用双手操作</span><a class="tool" href="../">返回抽卡册</a></div>
+      <div id="yg-controls" class="desktop-only" hidden>WASD 移动 · 左键射门或要球 · 右键传球或铲抢 · Shift 冲刺 · 空格跳跃</div>
+
+      <section id="yg-help" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+        <div class="card">
+          <h2 id="help-title">怎么踢</h2>
+          <dl class="touch-only">
+            <dt>移动</dt><dd>在屏幕左侧按住并拖动。默认俯视，瞄准方向跟随移动方向。</dd>
+            <dt>射门 / 要球</dt><dd>有球时点按射门，长按约 1 秒蓄力后松开。没球时向 AI 队友要球。</dd>
+            <dt>传球 / 铲抢</dt><dd>有球时点按传球，长按蓄力打出火焰传球。没球时向球铲抢。</dd>
+            <dt>冲刺 / 跳跃</dt><dd>冲刺和铲抢共用体力。跳起可以避开火焰传球。</dd>
+            <dt>镜头</dt><dd>右上角切换视角。肩后视角可在右半屏滑动瞄准。</dd>
+          </dl>
+          <dl class="desktop-only">
+            <dt>WASD、方向键</dt><dd>移动。肩后视角用鼠标瞄准，俯视用鼠标指向目标。</dd>
+            <dt>鼠标左键</dt><dd>有球时射门，长按可蓄力。没球时向 AI 队友要球。</dd>
+            <dt>鼠标右键</dt><dd>有球时传球，长按可蓄力。没球时铲抢。</dd>
+            <dt>Shift、空格</dt><dd>冲刺、跳跃。V 切换视角，Esc 暂停。</dd>
+          </dl>
+          <p>球碰墙会弹回。每队各有 5 次火焰传球和旋风射门，剩余次数显示在比分牌上。</p>
+          <button id="yg-help-close" class="primary" type="button">知道了</button>
+        </div>
+      </section>
+
+      <section id="yg-pause" class="overlay" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
+        <div class="card menu-card">
+          <h2 id="pause-title">比赛暂停</h2>
+          <button id="yg-resume" class="primary" type="button">继续比赛</button>
+          <div class="menu-actions">
+            <button id="yg-restart" type="button">重新开球</button><button id="yg-pause-help" type="button">操作说明</button>
+            <button id="yg-pause-sound" type="button">音效开</button><button id="yg-menu" type="button">回到赛前</button>
+          </div>
+          <a class="tool" href="../">返回抽卡册</a>
+        </div>
+      </section>
+
+      <section id="yg-results" class="overlay" role="dialog" aria-modal="true" aria-labelledby="yg-result-title" hidden>
+        <div class="card result-card">
+          <h2 id="yg-result-title"></h2>
+          <div id="yg-final-score" aria-label="最终比分"></div>
+          <div class="table-wrap" tabindex="0" aria-label="球员数据">
+            <table><thead><tr><th>球员</th><th>进球</th><th>传球</th><th>火焰命中</th><th>抢断</th><th>扑救</th></tr></thead><tbody id="yg-stats"></tbody></table>
+          </div>
+          <div class="menu-actions"><button id="yg-again" class="primary" type="button">再踢一场</button><button id="yg-result-menu" type="button">回到赛前</button></div>
+        </div>
+      </section>
+      <div id="game-error" class="overlay" hidden><div class="card menu-card"><h2>球场加载失败</h2><p>请刷新重试，或使用支持 WebGL 的浏览器。</p><a class="tool" href="../">返回抽卡册</a></div></div>
+      <noscript><div class="overlay">请启用 JavaScript 后再进入球场。</div></noscript>
+    </div>
+  </main>
+</body>
+</html>

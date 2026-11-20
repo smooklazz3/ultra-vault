@@ -1,0 +1,259 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #111b24;
+  color: #fff6e8;
+  --panel: #111c27;
+  --line: #ffffff30;
+  --accent: #ffe188;
+  --red: #ff8494;
+  --blue: #81d1ff;
+  --edge-x: 18px;
+  --edge-y: 14px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+[hidden] { display: none !important; }
+button, .tool {
+  appearance: none;
+  line-height: 1.15;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  min-height: 44px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: #192835f2;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px 13px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.tool { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+button:active, .tool:active { background: #364657; }
+button:focus-visible, a:focus-visible, .table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+button:disabled { cursor: wait; opacity: .65; }
+.primary { background: var(--accent); color: #211709; border-color: transparent; font-weight: 900; }
+.primary:active { background: #ffca57; }
+#yakar-gol { position: fixed; inset: 0; user-select: none; -webkit-user-select: none; }
+#yg-view { position: absolute; inset: 0; overflow: hidden; }
+#yg-view > canvas { display: block; width: 100%; height: 100%; }
+.toolbar {
+  position: absolute; z-index: 12; top: calc(var(--edge-y) + env(safe-area-inset-top));
+  left: calc(var(--edge-x) + env(safe-area-inset-left)); right: calc(var(--edge-x) + env(safe-area-inset-right));
+  display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;
+}
+.toolbar-actions { display: flex; gap: 8px; margin-left: auto; }
+.toolbar .tool { pointer-events: auto; white-space: nowrap; }
+#yg-full { display: none; }
+.tam-ekran #yg-full:not([hidden]) { display: inline-block; }
+[data-screen="match"] .toolbar .back,
+[data-screen="match"] .toolbar #yg-help-open,
+[data-screen="match"] .toolbar #yg-sound { display: none; }
+.home {
+  position: absolute; inset: 0; isolation: isolate; overflow: hidden; display: grid; align-items: center;
+  padding: 66px max(6vw,calc(28px + env(safe-area-inset-left))) 22px;
+  background: linear-gradient(100deg,#121d28 13%,#18232df5 38%,#351b28a6 72%,#68232d80);
+}
+.home::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(145deg, transparent 62%,#cf2f4638 62% 76%,transparent 76%);
+}
+.home-content { z-index: 1; width: min(54vw, 550px); }
+.match-format { color: var(--accent); font-size: 15px; letter-spacing: .11em; font-weight: 750; margin: 0; }
+.match-format b { margin: 0 5px; }
+.home h1 { margin: .22em 0; font-size: clamp(40px,7.7vw,112px); font-weight: 950; line-height: .98; letter-spacing: -.06em; }
+.home h1 span { display: block; color: var(--accent); }
+.home-description { max-width: 360px; margin: 14px 0 21px; font-size: clamp(14px,2vw,19px); color: #f7edde; line-height: 1.55; }
+.home .primary { min-width: clamp(150px,22vw,245px); min-height: 52px; padding: 10px 21px; font-size: 16px; }
+.home-meta { font-size: 13px; margin: 12px 0 0; color: #dbcec9; }
+.hero { position: absolute; z-index: -1; top: 0; right: 0; width: 59%; height: 100%; pointer-events: none; }
+.hero b {
+  position: absolute; right: 7%; top: 3%; font: 950 min(57vh,34vw)/1 system-ui, sans-serif;
+  letter-spacing: -.13em; color: #ffd78e28; -webkit-text-stroke: 1px #ffd78e70;
+}
+.hero img {
+  position: absolute; right: max(1vw, env(safe-area-inset-right)); bottom: -15%; height: min(103%,89vw); width: auto;
+  filter: drop-shadow(0 15px 20px #0009) drop-shadow(2px 0 2px #ffd17054);
+}
+.scoreboard {
+  position: absolute; z-index: 8; top: calc(var(--edge-y) + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  display: flex; align-items: stretch; overflow: hidden; border: 1px solid var(--line); border-radius: 10px;
+  background: #101925f2; box-shadow: 0 5px 16px #0005; pointer-events: none;
+}
+.team { display: grid; grid-template-columns: auto auto; gap: 2px 10px; padding: 5px 13px 6px; place-items: center; font-size: 13px; font-weight: 850; }
+.team b { color: #fff; font-size: 23px; line-height: 1; font-variant-numeric: tabular-nums; }
+.team.red-team { color: var(--red); border-top: 2px solid #f74962; }
+.team.blue-team { color: var(--blue); border-top: 2px solid #47b7f3; }
+.clock { display: grid; place-content: center; text-align: center; min-width: 78px; padding: 0 8px; background: #ffffff0b; }
+.clock b { font-size: 19px; line-height: 1; font-variant-numeric: tabular-nums; }
+.clock small { margin-top: 4px; font-size: 10px; color: #e8dde1; }
+.pips { grid-column: 1/-1; display: flex; gap: 4px; }
+.fires, .winds { display: flex; gap: 2px; }
+.pips i { width: 5px; height: 5px; border-radius: 50%; background: #ff9e49; }
+.winds i { background: #78edfb; }
+.pips i.used { opacity: .18; }
+.player {
+  position: absolute; z-index: 5; left: calc(var(--edge-x) + env(safe-area-inset-left));
+  bottom: calc(var(--edge-y) + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 8px;
+  min-width: 130px; padding: 6px 10px 6px 6px; border: 1px solid #ff6a8575; border-radius: 11px;
+  background: #151f2be8; pointer-events: none;
+}
+.player-photo { width: 40px; height: 40px; overflow: hidden; border-radius: 7px; position: relative; background: #682632; }
+.player-photo img { position: absolute; width: 92px; height: auto; left: -18px; top: -2px; }
+.player-name { color: var(--red); font-size: 11px; }
+.player strong { display: block; font-size: 13px; line-height: 1.3; }
+.energy { display: flex; align-items: center; color: var(--accent); font-size: 10px; gap: 5px; }
+.meter { width: 39px; height: 3px; background: #ffffff32; border-radius: 4px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); }
+#yg-controls { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); background: var(--panel); border-radius: 7px; padding: 9px 12px; font-size: 12px; white-space: nowrap; }
+#yg-touch { position: absolute; inset: 0; touch-action: none; -webkit-touch-callout: none; }
+.touch-zone { position: absolute; inset-block: 0; z-index: 7; touch-action: none; }
+.touch-zone.left { left: env(safe-area-inset-left); width: 44%; }
+.touch-zone.right { left: 44%; right: env(safe-area-inset-right); }
+.joystick-idle, #yg-stick::before {
+  width: 98px; height: 98px; border-radius: 50%; border: 2px solid #fff8; background: #151f2b70;
+  box-shadow: inset 0 0 0 7px #151f2b30; pointer-events: none;
+}
+.joystick-idle { position: absolute; z-index: 8; left: calc(38px + env(safe-area-inset-left)); bottom: calc(81px + env(safe-area-inset-bottom)); opacity: .6; }
+.joystick-idle::before { content: ""; position: absolute; inset: 33%; border: 1px solid #fff9; border-radius: 50%; }
+#yg-touch:has(#yg-stick:not([hidden])) .joystick-idle { opacity: .12; }
+#yg-stick { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 10; pointer-events: none; }
+#yg-stick::before { content: ""; position: absolute; left: -49px; top: -49px; }
+#yg-stick i { position: absolute; left: -19px; top: -19px; width: 38px; height: 38px; border-radius: 50%; background: #ffe4a4; box-shadow: 0 2px 8px #0006; }
+.touch-buttons {
+  position: absolute; right: calc(var(--edge-x) + env(safe-area-inset-right)); bottom: calc(var(--edge-y) + env(safe-area-inset-bottom));
+  display: grid; z-index: 10; grid-template-columns: repeat(2, auto); align-items: center; justify-items: center; gap: 9px 11px; pointer-events: none;
+}
+.tbtn {
+  --cd: 0; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 0; min-width: 54px; min-height: 50px; border-radius: 14px; font-size: 14px; background: #172231e8;
+  color: #fff9ec; border: 1px solid #e4edff83; overflow: hidden; pointer-events: auto; touch-action: none;
+}
+.tbtn::after { content: ""; position: absolute; inset: 0; background: conic-gradient(#10121980 calc(var(--cd) * 1turn),transparent 0); pointer-events: none; }
+.tbtn.on { transform: scale(.94); background: #37495b; }
+.tbtn.shoot, .tbtn.pass { width: clamp(73px,12vw,103px); height: clamp(64px,12vh,90px); font-size: 18px; }
+.tbtn.shoot { background: #ffe18a; color: #2b1c0d; border-color: #fff1be; }
+.tbtn.shoot.on { background: #ffbe58; }
+.tbtn.pass { border-color: #81d1ff; }
+.tbtn small { display: block; margin-top: 4px; font-size: 10px; font-weight: 780; line-height: 1.05; }
+.tbtn .when-free, .tbtn.shoot.call .when-ball, .tbtn.pass.dash .when-ball { display: none; }
+.tbtn.shoot.call .when-free, .tbtn.pass.dash .when-free { display: block; }
+#yg-rotate { display: none; }
+@media (orientation: portrait) {
+  .touch #yg-rotate {
+    position: absolute; z-index: 50; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 22px; background: radial-gradient(ellipse at 90% 70%,#5b2330,#111b24 70%);
+  }
+  #yg-rotate strong { font-size: 31px; color: var(--accent); }
+}
+.touch-only { display: none; }
+.touch .touch-only { display: grid; }
+.touch .desktop-only { display: none !important; }
+.overlay { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; padding: 12px max(18px,env(safe-area-inset-left),env(safe-area-inset-right)); background: #0a111bd3; }
+.card { width: min(590px,100%); max-height: 100%; overflow: auto; overscroll-behavior: contain; padding: clamp(14px,4vh,30px); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 15px 40px #0007; }
+.card h2 { font-size: clamp(23px,5vh,36px); color: var(--accent); margin: 0 0 9px; }
+.card p, .card dl { font-size: 14px; line-height: 1.5; margin: 12px 0; }
+.card dl { grid-template-columns: auto 1fr; gap: 8px 13px; }
+.card dt { font-weight: 800; color: var(--accent); }
+.card dd { margin: 0; }
+.menu-card { width: min(376px,100%); }
+.menu-card > .primary { width: 100%; }
+.menu-card > .tool { width: 100%; margin-top: 8px; }
+.menu-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+#yg-final-score { font-size: 34px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.table-wrap { max-height: 35dvh; overflow: auto; margin-bottom: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { text-align: left; padding: 5px; border-bottom: 1px solid #ffffff17; white-space: nowrap; }
+tr.me { background: #f7496228; font-weight: 800; }
+.blue-text, .actor-label.blue { color: var(--red); }
+.orange-text, .actor-label.orange { color: var(--blue); }
+.iso #yg-crosshair { display: none !important; }
+@media (max-height: 480px) {
+  :root { --edge-y: 7px; --edge-x: 10px; }
+  .home { padding-top: max(52px,calc(env(safe-area-inset-top) + 48px)); padding-bottom: 11px; }
+  .home h1 { font-size: clamp(34px,15vh,62px); }
+  .home .primary { min-height: 44px; }
+  .home-description { margin: 9px 0 12px; }
+  .home-meta { margin-top: 8px; }
+  .toolbar .tool { font-size: 12px; padding-inline: 8px; }
+  .team { padding-inline: 8px; gap: 1px 5px; }
+  .clock { min-width: 65px; }
+  .joystick-idle { width: 84px; height: 84px; bottom: calc(66px + env(safe-area-inset-bottom)); }
+}
+@media (max-height: 310px) { .home-description { display: none; } }
+/* Oyuncuların üstündeki etiketler (kaleci, yanan oyuncunun sayacı). */
+#yg-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.actor-label{position:absolute;top:0;left:0;font-size:10px;font-weight:900;text-shadow:0 2px 4px #12382e;background:#173a39aa;padding:3px 6px;border-radius:4px}
+.blue{color:#94eff3}
+.orange{color:#ffd098}
+
+/* Nişangah ve karakterin sırtındaki gösterge: enerji geri sayımı (sarı, dolunca yeşil "HAZIR") ve rüzgar şarjı (camgöbeği; enerji yokken soluk). */
+#yg-crosshair{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:28px monospace;color:white;text-shadow:0 1px 4px #173a39;pointer-events:none;z-index:6}
+#yg-overhead{position:absolute;top:0;left:0;z-index:6;pointer-events:none;display:flex;flex-direction:column;gap:4px;align-items:center}
+.over-row{display:flex;align-items:center;gap:6px;padding:4px 7px;border-radius:6px;background:#122f2cd9;border:1px solid #f1c57d88;box-shadow:0 4px 14px #0b1f1c66;font:900 11px/1 Segoe UI,Arial,sans-serif;letter-spacing:1px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.over-row span{min-width:78px;color:#ffd98f}
+.over-bar{width:56px;height:6px;border-radius:4px;background:#ffffff22;overflow:hidden}
+.over-bar i{display:block;height:100%;width:0;background:#f1c57d}
+.over-row.energy.ready{border-color:#9be58f;animation:ygReady .9s ease-out}
+.over-row.energy.ready span{color:#b9f5ae}
+.over-row.energy.ready .over-bar i{background:#9be58f}
+.over-row.stun{border-color:#ffe066}
+.over-row.stun span{color:#fff0a0}
+.over-row.stun .over-bar i{background:#ffe066}
+@keyframes ygReady{0%{transform:scale(1.25)}100%{transform:scale(1)}}
+
+/* Yakar top sineması: üstten ve alttan sinema şeritleri, ortada alevli başlık ve atanın adı. */
+#yg-cine{position:absolute;inset:0;z-index:9;pointer-events:none}
+.cine-bar{position:absolute;left:0;right:0;height:11vh;background:#0b0f0e;animation:ygBar .35s ease-out}
+.cine-bar.top{top:0}
+.cine-bar.bottom{bottom:0}
+.cine-title{position:absolute;left:50%;top:15vh;transform:translateX(-50%);text-align:center;animation:ygCine .5s cubic-bezier(.2,1.6,.4,1)}
+.cine-title strong{display:block;font:950 clamp(38px,6vw,74px)/1 Segoe UI,Arial,sans-serif;letter-spacing:-1px;background:linear-gradient(180deg,#fff3a0,#ff9a2e 45%,#e8321a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 14px #ff4a1a99)}
+.cine-title span{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:6px;background:#1a0f0bcc;color:#ffd9a8;font-weight:900;font-size:13px;letter-spacing:2px}
+.cine-aim{width:240px;height:7px;margin:10px auto 0;border-radius:4px;background:#ffffff26;overflow:hidden}
+.cine-aim i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff5a1f,#ffd35c)}
+#yg-cine:not([hidden]) ~ #yg-message{display:none!important}
+@keyframes ygBar{0%{transform:scaleY(0)}100%{transform:scaleY(1)}}
+@keyframes ygCine{0%{transform:translateX(-50%) scale(2.2);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:1}}
+
+/* Nişangah dolum halkası: sol tık rüzgar (camgöbeği), sağ tık yakar top (turuncu), yapılamıyorsa gri; dolunca atar. */
+#yg-charge{--p:0;--c:#8ff3ff;position:absolute;left:50%;top:50%;width:92px;height:92px;transform:translate(-50%,-50%);z-index:6;pointer-events:none}
+.charge-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1turn),#ffffff2e 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));filter:drop-shadow(0 0 7px var(--c))}
+#yg-charge span{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:10px;padding:5px 11px;border-radius:6px;background:#0f2a27e6;border:1px solid var(--c);color:var(--c);font:900 12px/1 Segoe UI,Arial,sans-serif;letter-spacing:1px;white-space:nowrap}
+#yg-charge.full .charge-ring{animation:ygFull .35s ease-in-out infinite alternate}
+@keyframes ygFull{0%{transform:scale(1)}100%{transform:scale(1.14)}}
+
+/* Hızlı koşu: ekran kenarlarından merkeze akan hız çizgileri (orta açık kalır). */
+#yg-speed{position:absolute;inset:-10%;z-index:5;pointer-events:none;background:repeating-conic-gradient(from 0deg,#ffffff00 0deg 5deg,#ffffff38 5.4deg 6deg,#ffffff00 6.4deg 11deg);-webkit-mask:radial-gradient(circle,transparent 34%,#000 72%);mask:radial-gradient(circle,transparent 34%,#000 72%);animation:ygSpeed .5s linear infinite}
+@keyframes ygSpeed{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(2deg) scale(1.04)}100%{transform:rotate(0deg) scale(1)}}
+
+/* Ortadaki mesaj ve yanma perdesi. */
+#yg-message{position:absolute;top:130px;left:50%;transform:translateX(-50%);background:#f1c57d;color:#263d30;padding:14px 27px;border-radius:8px;font-weight:900;letter-spacing:.5px;z-index:8;white-space:nowrap}
+#yg-burn{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 160px #e2693980;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#402c161f}
+#yg-burn strong{font-size:38px;color:#fff1cb;text-shadow:0 3px 18px #742609}
+#yg-burn-count{font-size:50px;font-weight:900;color:#ffd199}
+#yg-burn small{background:#513d27dd;padding:8px 12px;border-radius:6px}
+
+/* Sol alt oyuncu kartı ve alt kontrol şeridi. */
+/* Top ekran dışındayken kenardaki işaret: beyaz top ve topa doğru ok; yakar topta kırmızı. */
+#yg-ballmark{--a:0rad;position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#fff,#d9dccf);border:2px solid #173a39;box-shadow:0 3px 12px #0b1f1c88;z-index:6;pointer-events:none}
+#yg-ballmark i{position:absolute;inset:0;transform:rotate(var(--a))}
+#yg-ballmark i::after{content:"";position:absolute;right:-13px;top:50%;margin-top:-7px;border:7px solid transparent;border-left:10px solid #fff3c4;filter:drop-shadow(0 1px 2px #0008)}
+#yg-ballmark.fire{background:radial-gradient(circle at 38% 35%,#ffe08a,#ff5a1f);border-color:#6a1a08}
+/* Telefonda göstergeler ekranın altında (karakterin üstünde görüşü kapatmasın): dolum halkası ve enerji / sersemlik. */
+#yakar-gol.touch #yg-overhead{left:50%;top:auto;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%)!important}
+#yakar-gol.touch #yg-charge{top:auto;bottom:calc(64px + env(safe-area-inset-bottom));transform:translateX(-50%);width:54px;height:54px}
+#yakar-gol.touch #yg-charge span{top:50%;left:100%;transform:translateY(-50%);margin:0 0 0 10px}
+#yakar-gol.touch #yg-charge span{font-size:10px;padding:4px 8px}
+
+#yg-message { font-family: inherit; text-align: center; max-width: calc(100vw - 38px); }
+.touch #yg-charge { bottom: calc(46px + env(safe-area-inset-bottom)); }
+.touch #yg-overhead { bottom: calc(13px + env(safe-area-inset-bottom)); }
+.cine-title strong { font-size: clamp(26px,7vh,58px); }
+#yg-burn strong { font-size: clamp(26px,7vh,58px); }
+#yg-burn-count { font-size: clamp(28px,8vh,60px); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+.actor-label.future-star:not(.call):not(.fire-to) { color: #ffe188; background: #171c29; border: 1px solid #ffe18880; }
