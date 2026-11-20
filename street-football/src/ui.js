@@ -51,7 +51,7 @@ export function createUI(root) {
     over: $('overhead'), overEnergy: $('over-energy'), overEnergyText: $('over-energy-text'), overEnergyFill: $('over-energy-fill'),
     charge: $('charge'), chargeText: $('charge-text'), speed: $('speed'), overStun: $('over-stun'), overStunText: $('over-stun-text'), overStunFill: $('over-stun-fill'),
     ballmark: $('ballmark'), cine: $('cine'), cineWho: $('cine-who'), cineAim: $('cine-aim'), cineAimFill: $('cine-aim-fill'), cineTitle: $('cine-title'),
-    full: $('full'), resultTitle: $('result-title'), finalScore: $('final-score'), stats: $('stats'), sound: $('sound'), pauseSound: $('pause-sound'),
+    resultTitle: $('result-title'), finalScore: $('final-score'), stats: $('stats'), sound: $('sound'), pauseSound: $('pause-sound'),
   };
   // Skor tabelasındaki alev damlaları hak sayısı kadar (KICK.fireShots).
   for (const node of el.fires) node.innerHTML = '<i></i>'.repeat(KICK.fireShots);
@@ -84,7 +84,6 @@ export function createUI(root) {
     /** Tabela, saat ve oyuncu kartı (sık değişmeyenler; kare başına değil, kısa aralıkla). */
     hud(w, playing, screen) {
       for (const node of el.playing) node.hidden = !playing;
-      el.full.hidden = playing;
       el.crosshair.hidden = !playing || !!screen;
       el.blue.textContent = w.score[0]; el.orange.textContent = w.score[1];
       el.fires.forEach((node, team) => {
@@ -111,8 +110,8 @@ export function createUI(root) {
      * Top ekranda değilse kenarda işaret: topun yönünü gösteren ok, ekrana girince kaybolur (yakar pasta kırmızı).
      * project: dünya → ekran (behind: kameranın arkasında).
      */
-    ballMark(w, visible, project) {
-      const b = w.ball, m = 30, W = innerWidth, H = innerHeight;
+    ballMark(w, visible, project, { width: W, height: H }) {
+      const b = w.ball, m = 30;
       let s = visible ? project(b.x, 0.4, b.z) : null;
       const onScreen = s && !s.behind && s.x > 0 && s.x < W && s.y > 0 && s.y < H;
       el.ballmark.hidden = !s || onScreen;

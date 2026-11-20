@@ -4,23 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111b24">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="14 号街头足球">
   <meta name="description" content="操控红衣 14 号，在 3D 街头球场和 AI 踢五人制足球。">
   <title>14 号 · 街头足球 | 光之秘藏</title>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./style.css?v=screen-fit">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
-  <script type="module" src="./game.js"></script>
+  <script type="module" src="./game.js?v=screen-fit"></script>
 </head>
 <body>
   <main id="yakar-gol" data-screen="loading">
     <div id="yg-view">
       <div id="yg-labels" aria-hidden="true"></div>
       <header class="toolbar">
-        <a class="tool back" href="../">← 抽卡册</a>
+        <div class="toolbar-start">
+          <a class="tool back" href="../">← 抽卡册</a>
+          <button class="tool" id="yg-full" type="button" hidden>全屏</button>
+        </div>
         <div class="toolbar-actions">
           <button class="tool" id="yg-sound" type="button" aria-label="切换音效">音效开</button>
           <button class="tool" id="yg-help-open" type="button">操作</button>
           <button class="tool" id="yg-cam" type="button" aria-label="切换镜头">俯视视角</button>
-          <button class="tool" id="yg-full" type="button" hidden>全屏</button>
           <button class="tool" id="yg-pause-open" type="button" hidden>暂停</button>
         </div>
       </header>
@@ -81,6 +87,7 @@
       <section id="yg-help" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
         <div class="card">
           <h2 id="help-title">怎么踢</h2>
+          <p id="yg-fullscreen-note" hidden>iPhone 可在 Safari 的分享菜单中选择「添加到主屏幕」，再从主屏幕横屏打开。其他手机可用系统浏览器打开后点「全屏」。</p>
           <dl class="touch-only">
             <dt>移动</dt><dd>在屏幕左侧按住并拖动。默认俯视，瞄准方向跟随移动方向。</dd>
             <dt>射门 / 要球</dt><dd>有球时点按射门，长按约 1 秒蓄力后松开。没球时向 AI 队友要球。</dd>

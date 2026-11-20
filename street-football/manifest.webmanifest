@@ -1,0 +1,11 @@
+{
+  "id": "./",
+  "name": "14 号 · 街头足球",
+  "short_name": "14 号足球",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#111b24",
+  "theme_color": "#111b24"
+}

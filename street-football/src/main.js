@@ -2,9 +2,9 @@ import { createAudio } from './audio.js';
 import { createCinema } from './cinema.js';
 import { CINEMA, KICK } from './config.js';
 import { createInput } from './input.js';
-import { enterFullscreen, fullscreenOn, fullscreenSupported, toggleFullscreen, touchDevice } from './touch.js';
-import { createUI, onTap } from './ui.js';
-import { createView } from './view/view.js';
+import { fullscreenOn, fullscreenSupported, toggleFullscreen, touchDevice } from './touch.js?v=screen-fit';
+import { createUI, onTap } from './ui.js?v=screen-fit';
+import { createView } from './view/view.js?v=screen-fit';
 import { canPower, createWorld, startAim, step } from './world.js';
 import { t } from './dil.js';
 
@@ -16,6 +16,7 @@ export function start(root) {
   const touch = touchDevice();
   const portrait = matchMedia('(orientation: portrait)');
   root.classList.toggle('touch', touch);
+  fitVisibleViewport(root);
   const view = createView(root.querySelector('#yg-view'), { mobile: touch });
   const ui = createUI(root);
   const audio = createAudio();
@@ -23,6 +24,7 @@ export function start(root) {
   const pauseButton = root.querySelector('#yg-pause-open');
   const cameraButton = root.querySelector('#yg-cam');
   const fullButton = root.querySelector('#yg-full');
+  const fullscreenNote = root.querySelector('#yg-fullscreen-note');
   let w = createWorld();
   let screen = 'home', helpReturn = 'home', started = false;
   let cine = null, rightHold = null, acc = 0, uiClock = 0, last = performance.now();
@@ -58,10 +60,18 @@ export function start(root) {
   function toggleCamera() { setCamera(view.cameraMode === 'iso' ? 'shoulder' : 'iso'); }
   setCamera(touch ? 'iso' : 'shoulder');
   onTap(cameraButton, toggleCamera);
-  root.classList.toggle('tam-ekran', touch && fullscreenSupported());
-  const syncFull = () => { fullButton.textContent = fullscreenOn() ? '退出全屏' : '全屏'; };
+  const launchedFromHome = navigator.standalone || matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+  const syncFull = () => {
+    fullButton.hidden = launchedFromHome;
+    fullButton.textContent = fullscreenOn() ? '退出全屏' : fullscreenSupported() ? '全屏' : '全屏方式';
+  };
   document.addEventListener('fullscreenchange', syncFull);
-  onTap(fullButton, toggleFullscreen);
+  onTap(fullButton, async () => {
+    if (await toggleFullscreen()) return;
+    fullscreenNote.hidden = false;
+    if (screen !== 'help') help();
+    fullscreenNote.scrollIntoView({ block: 'nearest' });
+  });
   syncFull();
 
   function show(next) {
@@ -86,7 +96,6 @@ export function start(root) {
     started = true;
     acc = 0;
     audio.unlock();
-    if (touch) enterFullscreen();
     show(null);
     input.lock();
   }
@@ -181,7 +190,6 @@ export function start(root) {
   function endCinema() {
     if (!cine) return;
     cine = null;
-    view.cinemaEnd(w);
     ui.cinema(false);
   }
   function syncCine(dt) {
@@ -210,24 +218,7 @@ export function start(root) {
     if (!cine) return null;
     const scale = { aim: CINEMA.aimScale, flight: CINEMA.flightScale, wind: CINEMA.windScale, impact: CINEMA.impactScale }[cine.phase] ?? 1;
     const heat = cine.kind !== 'fire' ? 0 : cine.phase === 'aim' ? Math.min(1, cine.t / 0.6) : cine.phase === 'flight' ? Math.max(0.35, 1 - cine.t / CINEMA.flightMax) : 1;
-    return { scale, heat, track: cine.phase === 'aim' && !cine.mine };
-  }
-  const ballFocus = { x: 0, z: 0, angle: 0, team: 0, role: 0, burn: 0, stun: 0, air: 0, jump: 0, sprint: 0, vx: 0, vz: 0, on: false, yaw: 0 };
-  function focusFor(dt) {
-    const flying = cine && (cine.phase === 'flight' || cine.phase === 'wind' || cine.phase === 'impact');
-    if (!flying) { ballFocus.on = false; return null; }
-    const b = w.ball, speed = Math.hypot(b.vx, b.vz), iso = view.cameraMode === 'iso';
-    if (!ballFocus.on) {
-      const me = mine();
-      Object.assign(ballFocus, { x: me.x, z: me.z, on: true, yaw: speed > 1 ? Math.atan2(b.vx, b.vz) : view.yaw });
-    }
-    if (speed > 1) ballFocus.yaw += Math.atan2(Math.sin(Math.atan2(b.vx, b.vz) - ballFocus.yaw), Math.cos(Math.atan2(b.vx, b.vz) - ballFocus.yaw)) * Math.min(1, dt * CINEMA.chaseTurn);
-    const back = iso ? 0 : CINEMA.chase;
-    const tx = b.x - Math.sin(ballFocus.yaw) * back, tz = b.z - Math.cos(ballFocus.yaw) * back;
-    const k = 1 - Math.exp(-dt * (iso ? 5 : 9));
-    ballFocus.x += (tx - ballFocus.x) * k; ballFocus.z += (tz - ballFocus.z) * k;
-    if (!iso) view.setLook(ballFocus.yaw);
-    return ballFocus;
+    return { scale, heat };
   }
 
   function consume() {
@@ -281,9 +272,9 @@ export function start(root) {
     const aiming = playing && view.cameraMode === 'iso' && ((w.ball.owner === w.me && !cine) || !!myAim());
     view.showAim(aiming ? view.aim(input.move(view)) : null);
     const drawDt = playing ? dt : 0;
-    view.render(w, drawDt, playing, cinemaLook(), charge, focusFor(drawDt));
+    view.render(w, drawDt, playing, cinemaLook(), charge);
     ui.overhead(w, dt, playing, view.project);
-    ui.ballMark(w, playing && !cine, view.project);
+    ui.ballMark(w, playing, view.project, view.size);
     uiClock -= dt;
     if (uiClock <= 0) { uiClock = 0.08; refresh(); }
   }
@@ -293,6 +284,22 @@ export function start(root) {
   }
   show('home');
   requestAnimationFrame(frame);
+}
+
+function fitVisibleViewport(root) {
+  const viewport = window.visualViewport;
+  if (!viewport) return;
+  const sync = () => {
+    // Keep browser zoom available in menus without resizing the game in response to a pinch.
+    if (Math.abs(viewport.scale - 1) > 0.01 || !viewport.width || !viewport.height) return;
+    root.style.setProperty('--view-width', `${viewport.width}px`);
+    root.style.setProperty('--view-height', `${viewport.height}px`);
+    root.style.setProperty('--view-left', `${viewport.offsetLeft}px`);
+    root.style.setProperty('--view-top', `${viewport.offsetTop}px`);
+  };
+  viewport.addEventListener('resize', sync);
+  viewport.addEventListener('scroll', sync);
+  sync();
 }
 
 const BUZZ = { kick: 18, steal: 30, receive: 12, burn: 60, goal: [70, 50, 120] };

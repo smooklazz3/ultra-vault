@@ -2,7 +2,7 @@ const root = document.getElementById('yakar-gol');
 const play = document.getElementById('yg-start');
 
 try {
-  const { start } = await import('./src/main.js');
+  const { start } = await import('./src/main.js?v=screen-fit');
   start(root);
   play.disabled = false;
   play.textContent = '开始比赛 →';

@@ -1,22 +1,14 @@
 import * as T from 'three';
-import { CAMERA, GOAL_BLAST, TOUCH } from '../config.js';
+import { GOAL_BLAST, TOUCH } from '../config.js';
 import { t } from '../dil.js';
 import { createActor, syncActors } from './actors.js';
 import { createBallView, syncBall, topKalkisi } from './ballview.js';
-import { createShoulderCamera } from './camera.js';
+import { createShoulderCamera } from './camera.js?v=screen-fit';
 import { createEffects } from './effects.js';
 import { buildPitch } from './pitch.js';
 
-/**
- * Görünüm: three.js sahnesi, ışıklar, saha, on oyuncu, top ve efektler; kamera omuz ya da izometrik (setCamera). Simülasyonu
- * yalnızca okur: render her karede dünyayı çizer, event simülasyon olaylarından efekt çıkarır. Hızlı koşuda kamera
- * açısı genişler (CAMERA.sprintFov); şarj sırasında ayaktaki top hazırlanan vuruşun rengine bürünür.
- * mobile: telefonda piksel oranı ve gölge haritası küçülür, yumuşak gölge yerine düz gölge (TOUCH).
- * iso: izometrik kadraj ayarlarının üstüne yazılanlar (gösteri kipi daha yakın bakar, bkz. config.js GOSTERI.iso).
- * omuz: omuz kamerasının mesafe / yükseklik ayarları (rüzgar şutu gösteri sahnesi, bkz. config.js GOSTERI_RUZGAR.omuz).
- * İzometrikte nişan ekran ortası değildir: top sendeyken (ya da yakar pas nişanında) yerde nişan yönünü gösteren ok çıkar.
- */
-export function createView(container, { mobile = false, iso = null, omuz = null } = {}) {
+/** Render a match and its effects in the available game area. */
+export function createView(container, { mobile = false } = {}) {
   const renderer = new T.WebGLRenderer({ antialias: !mobile || devicePixelRatio < 2, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? TOUCH.pixelRatio : 1.5));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = mobile ? T.PCFShadowMap : T.PCFSoftShadowMap;
@@ -38,7 +30,7 @@ export function createView(container, { mobile = false, iso = null, omuz = null 
   const actors = Array.from({ length: 10 }, (_, id) => createActor(scene, labels, id));
   const ball = createBallView(scene);
   const effects = createEffects(scene);
-  const shoulder = createShoulderCamera(iso, omuz);
+  const shoulder = createShoulderCamera();
   let time = 0, real = 0, aimAt = null;
   // İzometrik nişan oku: oyuncunun ayağından nişan yönüne yassı bir ok.
   const arrow = new T.Group(), arrowMat = new T.MeshBasicMaterial({ color: '#fff3c4', transparent: true, opacity: 0.9, depthWrite: false, depthTest: false });
@@ -46,49 +38,39 @@ export function createView(container, { mobile = false, iso = null, omuz = null 
   shaft.rotation.x = head.rotation.x = -Math.PI / 2; shaft.position.z = 2.4; head.position.z = 4.2; head.rotation.z = Math.PI / 2;
   arrow.add(shaft, head); arrow.visible = false; arrow.renderOrder = 5; shaft.renderOrder = head.renderOrder = 5; scene.add(arrow);
 
-  const resize = () => { renderer.setSize(innerWidth, innerHeight); shoulder.resize(innerWidth, innerHeight); };
-  resize(); addEventListener('resize', resize);
+  let size = { width: 0, height: 0 };
+  const resize = () => {
+    const { clientWidth: width, clientHeight: height } = container;
+    if (!width || !height || (size.width === width && size.height === height)) return;
+    size = { width, height };
+    renderer.setSize(width, height, false);
+    shoulder.resize(width, height);
+  };
+  resize();
+  new ResizeObserver(resize).observe(container);
 
   return {
     canvas: renderer.domElement,
+    get size() { return size; },
     get camera() { return shoulder.camera; },
     get cameraMode() { return shoulder.mode; },
-    /** 'shoulder' | 'iso' */
-    setCamera: mode => { shoulder.setMode(mode); resize(); },
-    flames: ball.flames,
-    gusts: ball.gusts,
-    ballCore: ball.core,
+    setCamera: mode => shoulder.setMode(mode),
     faceBall: w => shoulder.faceBall(w),
-    /** Sinema bitti: kamera kaldığı bakışa değil topa döner (kontrol oyuncuya topa bakarak geçer). */
-    cinemaEnd: w => shoulder.faceBall(w),
     look: (dx, dy) => shoulder.look(dx, dy),
-    /** Bakışı doğrudan kurar (gösteri sahneleri; bkz. src/gosteri-ruzgar.js). */
-    setLook: (yaw, pitch) => shoulder.setLook(yaw, pitch),
-    /** Kamerayı doğrudan yerleştirir (baştan sona sahnelenmiş gösteri; bkz. src/gosteri-ates.js). */
-    setPose: pose => shoulder.setPose(pose),
-    /** Oyuncunun dolum çevresi görünüyor mu (testler için): { fire, wind }. */
-    aura: id => ({ fire: actors[id].fireAura.visible, wind: actors[id].windAura.visible }),
-    /** Omuz kamerasının yatay bakışı (rad). */
-    get yaw() { return shoulder.yaw; },
-    /** İzometrikte fare imleci (ekran pikseli; null: yok). */
-    point: (x, y) => shoulder.point(x, y),
+    point: (x, y) => {
+      const bounds = container.getBoundingClientRect();
+      shoulder.point(x - bounds.left, y - bounds.top);
+    },
     aim: move => shoulder.aim(move),
     /** İzometrik nişan oku bu karede nereyi göstersin (null: gizli). */
     showAim: at => { aimAt = at; },
     movement: (x, z) => shoulder.movement(x, z),
     project: (x, y, z) => shoulder.project(x, y, z),
     event: e => { effects.spawn(e); if (e.type === 'goal') shoulder.shake(GOAL_BLAST.shake); },
-    /**
-     * cine: { scale, heat } yakar pas sinemasında: oyuncular ölçekli zamanla (donuk / ağır çekim), alevler gerçek zamanla oynar.
-     * focus: kameranın izleyeceği nokta (oyuncu biçiminde: x, z, burn, air, jump, sprint); null ise kendi oyuncun.
-     * Gösteri kipinde insan oyuncu yoktur, kamera aksiyonun ağırlık merkezini izler (bkz. gosteri.js).
-     */
-    render(w, dt, playing, cine = null, charge = null, focus = null) {
-      const scale = cine ? cine.scale : 1;
+    render(w, dt, playing, cine = null, charge = null) {
+      const scale = cine?.scale ?? 1;
       time += dt * scale; real += dt;
-      if (cine && cine.track !== false) shoulder.track(w, dt);
-      const hero = focus || w.players[w.me], wide = hero.sprint > 0 && hero.burn <= 0 ? CAMERA.sprintFov : CAMERA.fov;
-      if (shoulder.mode === 'shoulder') shoulder.zoom(wide, dt);
+      const hero = w.players[w.me];
       shoulder.follow(hero, dt);
       syncActors(actors, w, time, playing, shoulder.project, real, shoulder.mode === 'iso');
       syncBall(ball, w.ball, real, dt * scale, cine ? cine.heat : 0, w.ball.owner === w.me ? charge : null, topKalkisi(w));

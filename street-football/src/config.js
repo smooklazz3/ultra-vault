@@ -78,7 +78,7 @@ export const KICK = { normal: 29, wind: 28, fire: 27, pass: 20, cooldown: 0.32, 
  * kadraj topa kayar), sinema bitince kamera topa bakarak oyuncuya geçer. Botlar da dolum ve nişanla atar (bkz. BOT, ai.js).
  * Vurulan oyuncu kenara gitmeden önce `knock` simülasyon saniyesi çarpma noktasında geriye savrulur.
  */
-export const CINEMA = { hold: 1, aim: 1.2, aimScale: 0.35, knock: 0.45, flightScale: 0.6, flightMax: 3, windScale: 1, windMax: 4, impact: 0.5, impactScale: 0.25, turn: 7, chase: 5, chaseTurn: 6 };
+export const CINEMA = { hold: 1, aim: 1.2, aimScale: 0.35, knock: 0.45, flightScale: 0.6, flightMax: 3, windScale: 1, windMax: 4, impact: 0.5, impactScale: 0.25 };
 
 /**
  * Rüzgar topu **durdurulamaz**: yavaşlamaz (`friction`), kimse (kaleci ve takım arkadaşları dahil) onu tutamaz, değdiği
@@ -137,9 +137,9 @@ export const BOT = { think: 0.5, thinkJitter: 0.35, threat: 9, shootRange: 16, f
 /**
  * Omuz kamerası: oyuncunun `back` gerisinde, `side` sağında ve `height` yukarıda. Fare kilitliyken yatay / dikey bakış
  * döner; nişan ekran ortasından zemine inen ışındır (`aimMax` ötesi ya da gökyüzü için `aimFallback` uzaklık). Hızlı
- * koşuda görüş açısı `sprintFov`'a genişler. Telefonda varsayılan izometrik kamera (`iso`, bkz. view/camera.js).
+ * Telefonda varsayılan izometrik kamera (`iso`, bkz. view/camera.js).
  */
-export const CAMERA = { fov: 66, sprintFov: 77, far: 240, back: 4.6, side: 0.65, height: 2.8, pitch: 0.13, pitchMin: -0.1, pitchMax: 0.55, yawSpeed: 0.003, pitchSpeed: 0.002, aimMax: 100, aimFallback: 50,
+export const CAMERA = { fov: 66, far: 240, back: 4.6, side: 0.65, height: 2.8, pitch: 0.13, pitchMin: -0.1, pitchMax: 0.55, yawSpeed: 0.003, pitchSpeed: 0.002, aimMax: 100, aimFallback: 50,
   /**
    * İzometrik (telefonda varsayılan): futbol yayını gibi **sabit** yan açı; kamera tribün tarafında (+x) sahaya bakar, saha
    * ekranda yatay uzanır (kaleler sağda ve solda), fare / parmak açıyı değiştirmez. Kadrajın yarı yüksekliği, uzaklık, eğim

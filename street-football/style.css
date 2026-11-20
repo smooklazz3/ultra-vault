@@ -1,5 +1,7 @@
 :root {
   color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   background: #111b24;
   color: #fff6e8;
@@ -12,7 +14,7 @@
   --edge-y: 14px;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
 [hidden] { display: none !important; }
 button, .tool {
   appearance: none;
@@ -36,18 +38,22 @@ button:focus-visible, a:focus-visible, .table-wrap:focus-visible { outline: 2px 
 button:disabled { cursor: wait; opacity: .65; }
 .primary { background: var(--accent); color: #211709; border-color: transparent; font-weight: 900; }
 .primary:active { background: #ffca57; }
-#yakar-gol { position: fixed; inset: 0; user-select: none; -webkit-user-select: none; }
+#yakar-gol {
+  position: fixed; left: var(--view-left, 0px); top: var(--view-top, 0px);
+  width: var(--view-width, 100%); height: var(--view-height, 100%); height: var(--view-height, 100dvh);
+  overflow: hidden; user-select: none; -webkit-user-select: none;
+}
 #yg-view { position: absolute; inset: 0; overflow: hidden; }
+.touch[data-screen="match"] #yg-view { touch-action: none; }
 #yg-view > canvas { display: block; width: 100%; height: 100%; }
 .toolbar {
   position: absolute; z-index: 12; top: calc(var(--edge-y) + env(safe-area-inset-top));
   left: calc(var(--edge-x) + env(safe-area-inset-left)); right: calc(var(--edge-x) + env(safe-area-inset-right));
   display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;
 }
-.toolbar-actions { display: flex; gap: 8px; margin-left: auto; }
+.toolbar-start, .toolbar-actions { display: flex; gap: 8px; }
+.toolbar-actions { margin-left: auto; }
 .toolbar .tool { pointer-events: auto; white-space: nowrap; }
-#yg-full { display: none; }
-.tam-ekran #yg-full:not([hidden]) { display: inline-block; }
 [data-screen="match"] .toolbar .back,
 [data-screen="match"] .toolbar #yg-help-open,
 [data-screen="match"] .toolbar #yg-sound { display: none; }
